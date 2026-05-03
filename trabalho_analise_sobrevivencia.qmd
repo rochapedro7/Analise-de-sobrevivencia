@@ -1,0 +1,478 @@
+---
+title: "Análise de Sobrevivência e Confiabilidade"
+subtitle: "Trabalho - Parte I"
+author: "Pedro Augusto Menezes Rocha"
+date: today
+date-format: "DD/MM/YYYY"
+institute: "Universidade Federal Fluminense (UFF)"
+lang: pt-BR
+format:
+  revealjs:
+    theme: serif
+    slide-number: c/t
+    slide-level: 2
+    incremental: false
+    transition: fade
+    background-transition: fade
+    width: 1280
+    height: 720
+    margin: 0.07
+    auto-stretch: false
+    logo: "logo_uff.png"
+    footer: ""
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+require(readxl)
+require(dplyr)
+require(ggplot2)
+require(survival)    
+require(ggsurvfit)
+require(survRM2)
+require(coin)
+require(survminer)
+require(multcompView)
+library(patchwork)
+
+Dados <- read_excel("CancerPulmao1.xlsx")
+
+Dados <- Dados %>%
+  mutate(
+    cens = ifelse(status == 2, 1, 0),
+    grupos_sex = factor(sex,
+                        levels = c(1,2),
+                        labels = c("Masculino","Feminino")),
+    grupos_ecog = factor(ph.ecog)
+  )
+
+Dados$grupos_ecog <- factor(Dados$ph.ecog, 
+                        levels = c(0, 1, 2), 
+                        labels = c("assintomático", 
+                                   "sintomático, mas completamente deambulante", 
+                                   "acamado < 50% do dia"))
+```
+
+# **1. INTRODUÇÃO**
+
+## **Câncer de Pulmão**
+
+:::::: columns
+:::: {.column width="60%"}
+::: {style="font-size: 80%;"}
+O câncer de pulmão é o crescimento descontrolado de células malignas nos pulmões, causado principalmente pelo tabagismo e pela exposição a agentes tóxicos.
+
+Por ser uma doença silenciosa, o diagnóstico é frequentemente tardio, manifestando-se por sintomas como tosse crônica e falta de ar.
+
+Atualmente, figura como uma das principais causas de mortalidade no mundo, exigindo tratamentos que variam entre cirurgia e terapias avançadas.
+:::
+::::
+
+::: {.column width="40%"}
+![](CancerPulmao1.png){fig-align="center"}
+:::
+::::::
+
+## **Contextualização do problema**
+
+::: {style="font-size: 100%;"}
+Este estudo utiliza uma base clínica real do **North Central Cancer Treatment Group (NCCTG)**, composta por **209 pacientes com câncer de pulmão**.
+
+O objetivo é analisar o **tempo até o óbito**, considerando a presença de **observações censuradas**, por meio de métodos não paramétricos de sobrevivência.
+:::
+
+::: {style="font-size: 80%;"}
+-   **Evento de interesse:** óbito
+-   **Tempo:** dias até o evento
+-   **Censura:** paciente vivo ao final do estudo ou perda de seguimento
+:::
+
+------------------------------------------------------------------------
+
+## **Descrição das variáveis**
+
+::: {style="font-size: 70%;"}
+| Variável | Significado | Unidade / Categoria |
+|:-----------------------|:-----------------------|:-----------------------|
+| `time` | Tempo de sobrevivência | Dias |
+| `status` | Indicador de evento | 0 = censurado, 1 = óbito |
+| `age` | Idade do paciente | Anos |
+| `sex` | Sexo do paciente | Masculino; Feminino |
+| `ph.ecog` | Estado funcional (ECOG) | Assintomático; Sintomático, mas deambulante; Acamado \< 50% do dia |
+| `ph.karno` | Índice de Karnofsky (médico) | Escala de 0 a 100 |
+| `pat.karno` | Índice de Karnofsky (paciente) | Escala de 0 a 100 |
+| `wt.loss` | Perda de peso recente | Libras perdidas |
+
+[**OBS.:** O Índice de Karnofsky é uma escala (0 a 100) que mede a capacidade física e a qualidade de vida do paciente para guiar decisões sobre tratamentos. Aqui, ele é avaliado sob duas perspectivas: **a visão clínica do médico (ph.karno)** e a **autoavaliação do próprio paciente (pat.karno)**.]{style="font-size: 65%;"}
+:::
+
+# **2. METODOLOGIA**
+
+::: {style="font-size: 50%;"}
+## **Métodos utilizados**
+
+Foram aplicados os seguintes métodos de análise de sobrevivência e estatística descritiva:
+
+-   **Estimador de Kaplan-Meier**
+    -   Estimação da função de sobrevivência global
+    -   Estimação estratificada por sexo
+    -   Estimação estratificada por status funcional (ECOG)
+-   **Tempo mediano de sobrevivência**
+    -   Estimativa pontual
+    -   Intervalo de confiança de 95%
+-   **Testes de comparação entre curvas**
+    -   **Teste Log-Rank**
+    -   **Teste Peto-Peto**
+-   **Comparações múltiplas**
+    -   Comparações par a par entre níveis de ECOG
+    -   Correção de multiplicidade pelo método de **Holm-Bonferroni**
+-   **Estatística descritiva**
+    -   Idade: Média, desvio-padrão e mediana
+    -   Índice médio de Karnofsky (Médico e Paciente)
+    -   Perda Média de peso
+    -   Comparação descritiva segundo ocorrência do evento
+:::
+
+# **3. RESULTADOS**
+
+# **Análise sem covariáveis**
+
+## **Curva de sobrevivência global**
+
+```{r ekm global, include=FALSE}
+Surv(Dados$time,Dados$cens)
+
+ekm_global <- survfit2(
+  data = Dados,
+  formula = Surv(time, cens) ~ 1,
+  conf.type = "log-log",
+  conf.int = 0.95
+)
+```
+
+:::::: columns
+::: {.column width="60%"}
+```{r grafico ekm global}
+#| fig-width: 7
+#| fig-height: 7
+#| fig-align: "center"
+
+ggsurvfit(ekm_global, linewidth = 1.2) +
+  add_confidence_interval() +
+  add_censor_mark(size = 2) +
+  add_quantile(y_value = 0.5, color = "red", linetype = "dashed", linewidth = 1) + 
+  scale_ggsurvfit() +
+  labs(
+    x = "Tempo (dias)",
+    y = "Probabilidade de sobrevivência",
+    title = "Curva Kaplan-Meier Global"
+  ) +
+  theme_classic(base_size = 18)
+```
+:::
+
+:::: {.column width="40%"}
+::: {style="font-size: 80%; padding-top: 50px;"}
+-   A curva evidencia queda contínua da sobrevivência ao longo do tempo.
+
+-   O ponto em que a curva intercepta 50% ocorre em **345 dias**, representando a mediana de sobrevivência da amostra.
+
+-   Assim, estima-se que **50% dos pacientes tiveram o evento (óbito) até aproximadamente 11 meses de acompanhamento**.
+:::
+::::
+::::::
+
+# **Análise com covariáveis qualitativas**
+
+## **Curva de sobrevivência por sexo**
+
+```{r ekm sexo, include=FALSE}
+ekm_sex <- survfit2(
+  data = Dados,
+  formula = Surv(time, cens) ~ grupos_sex,
+  conf.type = "log-log",
+  conf.int = 0.95
+)
+```
+
+:::::: columns
+::: {.column width="60%"}
+```{r grafico ekm sexo}
+#| fig-width: 7
+#| fig-height: 7
+#| fig-align: "center"
+
+ggsurvfit(ekm_sex, linewidth = 1.2) +
+  add_confidence_interval() +
+  add_censor_mark(size = 2, alpha = 1) +
+  add_quantile(y_value = 0.5, color = "red", linetype = "dashed", linewidth = 1) + 
+  scale_ggsurvfit() +
+  labs(
+    x = "Tempo (dias)",
+    y = "Sobrevivência estimada",
+    title = "Sobrevivência por Sexo"
+  ) +
+  theme_classic(base_size = 16)
+```
+:::
+
+:::: {.column width="40%"}
+::: {style="font-size: 60%; padding-top: 50px;"}
+-   A curva de Kaplan-Meier indica **maior probabilidade de sobrevivência** no grupo feminino durante praticamente todo o período de acompanhamento.
+
+-   A mediana de sobrevivência estimada foi de:
+
+    -   **285 dias** para o sexo masculino
+    -   **444 dias** para o sexo feminino
+
+-   A separação entre as curvas ocorre desde os primeiros meses e permanece ao longo do seguimento, sugerindo diferença consistente entre os grupos.
+:::
+::::
+::::::
+
+## **Comparação das curvas por sexo**
+
+:::{style="font-size: 50%; line-height: 1.1;"}
+
+### **Testes utilizados**
+
+- O **teste Log-Rank** é utilizado para comparar as curvas de sobrevivência entre grupos.
+
+- A hipótese nula é dada por:
+
+$$
+H_0: S_{Masculino}(t)=S_{Feminino}(t)
+$$
+
+- Isto é, assume-se que **não há diferença entre as funções de sobrevivência ao longo do tempo**.
+
+- O **teste Peto-Peto** possui a mesma finalidade, porém atribui maior peso às diferenças observadas nos tempos iniciais.
+
+
+### **Resultados**
+
+**Teste Log-Rank**
+
+$$
+p = 0,003 < 0,05
+$$
+
+**Teste Peto-Peto**
+
+$$
+p = 0,00076 < 0,05
+$$
+
+
+### **Conclusão**
+
+Como ambos os valores de $p$ são inferiores a $0,05$, rejeita-se $H_0$.
+
+Conclui-se que existe **diferença estatisticamente significativa entre as curvas de sobrevivência por sexo**, evidenciando maior sobrevida para o grupo feminino.
+
+:::
+
+:::
+
+## **Curva de sobrevivência por ECOG**
+
+```{r ekm ecog, include=FALSE}
+ekm_ecog <- survfit2(
+  data = Dados,
+  formula = Surv(time, cens) ~ grupos_ecog,
+  conf.type = "log-log",
+  conf.int = 0.95
+)
+```
+
+:::::: columns
+::: {.column width="60%"}
+
+```{r grafico ekm ecog}
+#| fig-width: 7
+#| fig-height: 6
+#| fig-align: "center"
+
+ggsurvfit(ekm_ecog, linewidth = 1.2) +
+  add_confidence_interval() +
+  add_censor_mark(size = 2, alpha = 1) +
+  add_quantile(y_value = 0.5, color = "red", linetype = "dashed", linewidth = 1) +
+  scale_ggsurvfit() +
+  labs(
+    x = "Tempo (dias)",
+    y = "Sobrevivência estimada",
+    title = "Sobrevivência por ECOG"
+  ) +
+  theme_classic(base_size = 16) +
+  theme(
+    legend.position = "bottom",   # melhora layout
+    plot.title = element_text(hjust = 0.5)
+  )
+```
+
+:::
+
+:::: {.column width="40%"}
+::: {style="font-size: 60%; padding-top: 50px;"}
+
+- A curva de Kaplan-Meier evidencia clara separação entre os níveis de ECOG ao longo do tempo.
+- Pacientes assintomáticos apresentam maior probabilidade de sobrevivência durante todo o acompanhamento.
+- Pacientes acamados (< 50% do dia) apresentam a pior sobrevida, com queda mais acentuada da curva e, ao final do acompanhamento, observa-se uma redução ainda mais abrupta, possivelmente associada ao baixo número de indivíduos em risco, o que aumenta a variabilidade da estimativa.
+- A separação entre as curvas ocorre desde o início e se mantém ao longo do tempo, indicando forte associação entre o estado funcional e o prognóstico.
+
+:::
+::::
+::::::
+
+## **Comparação das curvas por ECOG**
+
+:::{style="font-size: 50%; line-height: 1.1;"}
+
+### **Comparações múltiplas**
+
+- Foram realizadas comparações par a par entre os níveis de ECOG.
+
+- Para controle do erro do tipo I, foi aplicada a **correção de Holm-Bonferroni**, ajustando os valores de $p$ nas múltiplas comparações.
+
+
+### **Resultados**
+
+- O teste global indicou diferença significativa entre os grupos  
+  ($p = 0,0005$ –> Log-Rank; $p = 0,00027$ –> Peto-Peto).
+
+- Após a correção de Holm, observou-se que:
+  - **Assintomático vs Acamado**: diferença altamente significativa  
+    ($p < 0,001$)
+  - **Sintomático vs Acamado**: diferença significativa  
+    ($p < 0,05$)
+  - **Assintomático vs Sintomático**: não significativo ao nível de 5% no Log-Rank  
+    (resultado próximo do limite de significância no teste Peto-Peto)
+
+- Os resultados são consistentes entre os testes, indicando maior contraste envolvendo o grupo mais debilitado.
+
+
+### **Conclusão**
+
+Os resultados indicam que o estado funcional do paciente exerce papel fundamental na evolução da doença.
+
+Pacientes em condições mais debilitadas apresentam **menor tempo de sobrevivência**, evidenciando a importância da condição clínica no prognóstico.
+
+Assim, o ECOG se mostra uma variável relevante para auxiliar na avaliação e acompanhamento dos pacientes.
+
+:::
+
+# **Análise com covariáveis quantitativas**
+
+## **Medidas descritivas globais**
+
+:::::: columns
+::: {.column width="55%"}
+
+:::{style="font-size: 80%;"}
+
+```{r quanti global}
+library(knitr)
+
+tabela_global <- data.frame(
+  Medida = c("Idade (Média)", "Idade (DP)", "Idade (Mediana)",
+             "Karnofsky - Médico (Média)", "Karnofsky - Paciente (Média)", "Perda de peso (Média)"),
+  Valor = c("62,4", "9,18", "63", "82,4", "80,2", "9,58")
+)
+
+kable(tabela_global, digits = 2, align = "c")
+```
+
+:::
+
+:::
+
+::: {.column width="45%"}
+
+:::{style="font-size: 60%;"}
+
+- A amostra apresenta pacientes com idade média em torno de 62 anos, caracterizando um grupo predominantemente idoso.
+
+- Os valores médios elevados do índice de Karnofsky indicam que, no geral, os pacientes ainda apresentavam boa capacidade funcional no início do acompanhamento.
+
+- A perda de peso média moderada sugere presença de comprometimento clínico, mas com variabilidade entre os indivíduos.
+
+De forma geral, a amostra é composta por pacientes com condição funcional relativamente preservada no início do acompanhamento, embora já inseridos em um contexto clínico de risco, típico de doenças graves como o câncer de pulmão.
+
+:::
+:::
+
+::::::
+
+## **Medidas descritivas por ocorrência de evento**
+
+:::::: columns
+::: {.column width="55%"}
+
+:::{style="font-size: 80%;"}
+
+```{r quanti ocorrencia}
+tabela_evento <- data.frame(
+  Variavel = c("Idade (Média)", "Karnofsky - Médico (Média)", "Karnofsky - Paciente (Média)", "Perda de peso (Média)"),
+  Censurado = c(60.1, 85.6, 84.2, 9.11),
+  Obito = c(63.3, 81.1, 78.6, 9.78)
+)
+
+knitr::kable(tabela_evento, digits = 2, align = "c")
+```
+
+:::
+
+:::
+
+::: {.column width="45%"}
+
+:::{style="font-size: 60%;"}
+
+- Pacientes que evoluíram para óbito apresentam, em média, pior condição funcional, evidenciada por menores valores de Karnofsky.
+
+- O grupo censurado apresenta melhores indicadores clínicos, sugerindo maior capacidade de enfrentamento da doença.
+
+- A perda de peso é ligeiramente maior entre os pacientes que foram a óbito, indicando possível associação com pior evolução clínica.
+
+- A idade não apresenta diferença expressiva, sugerindo que o desfecho não depende fortemente desse fator isolado.
+
+Os resultados indicam que o prognóstico está mais relacionado ao estado clínico do paciente do que à idade em si, reforçando a importância de indicadores funcionais na avaliação da sobrevivência.
+
+:::
+:::
+:::::: 
+
+# **4. CONCLUSÃO**
+
+## **Resultados principais**
+
+:::{style="font-size: 80%; line-height: 1.2;"}
+
+- A sobrevivência apresentou queda ao longo do tempo, com mediana próxima de 11 meses.
+
+- Houve maior sobrevida no grupo feminino.
+
+- O ECOG foi o principal fator associado ao prognóstico, com pior sobrevida em pacientes mais debilitados.
+
+- Indicadores clínicos (Karnofsky e perda de peso) reforçam que pior condição inicial está associada a piores desfechos.
+
+:::
+
+## **Interpretação e implicações**
+
+:::{style="font-size: 80%; line-height: 1.2;"}
+
+- Os resultados mostram que a sobrevivência de pacientes com câncer de pulmão está fortemente relacionada ao seu estado clínico no início do acompanhamento, mais do que a características como idade isoladamente.
+
+- O ECOG e o índice de Karnofsky se mostram ferramentas fundamentais para avaliação prognóstica, podendo auxiliar na estratificação de risco e planejamento do tratamento.
+
+- Diferenças observadas entre grupos indicam a importância de abordagens clínicas individualizadas, especialmente para pacientes em condição mais debilitada.
+
+- Como limitações, destacam-se a presença de censura e o fato de a análise não considerar múltiplas covariáveis simultaneamente, o que pode influenciar parcialmente os resultados.
+
+- Ainda assim, a análise fornece evidências claras de que o estado funcional é um dos principais determinantes da sobrevivência, sendo essencial no contexto clínico da doença.
+
+:::
