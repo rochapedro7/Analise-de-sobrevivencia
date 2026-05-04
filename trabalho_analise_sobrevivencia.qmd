@@ -318,10 +318,13 @@ ggsurvfit(ekm_ecog, linewidth = 1.2) +
 :::: {.column width="40%"}
 ::: {style="font-size: 60%; padding-top: 50px;"}
 
-- A curva de Kaplan-Meier evidencia clara separação entre os níveis de ECOG ao longo do tempo.
-- Pacientes assintomáticos apresentam maior probabilidade de sobrevivência durante todo o acompanhamento.
-- Pacientes acamados (< 50% do dia) apresentam a pior sobrevida, com queda mais acentuada da curva e, ao final do acompanhamento, observa-se uma redução ainda mais abrupta, possivelmente associada ao baixo número de indivíduos em risco, o que aumenta a variabilidade da estimativa.
-- A separação entre as curvas ocorre desde o início e se mantém ao longo do tempo, indicando forte associação entre o estado funcional e o prognóstico.
+- Há clara separação entre os níveis de ECOG ao longo do tempo.
+
+- Pacientes assintomáticos apresentam melhor sobrevida.
+
+- Pacientes acamados (< 50% do dia) têm pior prognóstico, com queda mais acentuada da curva.
+
+- A diferença entre os grupos se mantém ao longo do acompanhamento, indicando forte relação entre estado funcional e sobrevivência.
 
 :::
 ::::
