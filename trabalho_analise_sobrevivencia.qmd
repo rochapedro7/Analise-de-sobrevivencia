@@ -87,7 +87,7 @@ O objetivo é analisar o **tempo até o óbito**, considerando a presença de **
 ::: {style="font-size: 80%;"}
 -   **Evento de interesse:** óbito
 -   **Tempo:** dias até o evento
--   **Censura:** paciente vivo ao final do estudo ou perda de seguimento
+-   **Censura:** paciente vivo ao final do estudo ou perda de seguimento (62 casos)
 :::
 
 ------------------------------------------------------------------------
