@@ -396,13 +396,9 @@ kable(tabela_global, digits = 2, align = "c")
 
 :::{style="font-size: 60%;"}
 
-- A amostra apresenta pacientes com idade média em torno de 62 anos, caracterizando um grupo predominantemente idoso.
+- A amostra é composta majoritariamente por pacientes idosos, com condição funcional relativamente preservada no início.
 
-- Os valores médios elevados do índice de Karnofsky indicam que, no geral, os pacientes ainda apresentavam boa capacidade funcional no início do acompanhamento.
-
-- A perda de peso média moderada sugere presença de comprometimento clínico, mas com variabilidade entre os indivíduos.
-
-De forma geral, a amostra é composta por pacientes com condição funcional relativamente preservada no início do acompanhamento, embora já inseridos em um contexto clínico de risco, típico de doenças graves como o câncer de pulmão.
+- Os indicadores sugerem um grupo já em contexto clínico de risco, mas ainda com capacidade funcional razoável.
 
 :::
 :::
@@ -434,15 +430,11 @@ knitr::kable(tabela_evento, digits = 2, align = "c")
 
 :::{style="font-size: 60%;"}
 
-- Pacientes que evoluíram para óbito apresentam, em média, pior condição funcional, evidenciada por menores valores de Karnofsky.
+- Pacientes que foram a óbito apresentam pior condição funcional (menores índices de Karnofsky).
 
-- O grupo censurado apresenta melhores indicadores clínicos, sugerindo maior capacidade de enfrentamento da doença.
+- O grupo censurado apresenta melhores condições clínicas gerais.
 
-- A perda de peso é ligeiramente maior entre os pacientes que foram a óbito, indicando possível associação com pior evolução clínica.
-
-- A idade não apresenta diferença expressiva, sugerindo que o desfecho não depende fortemente desse fator isolado.
-
-Os resultados indicam que o prognóstico está mais relacionado ao estado clínico do paciente do que à idade em si, reforçando a importância de indicadores funcionais na avaliação da sobrevivência.
+- Idade tem pouca diferença entre os grupos, indicando menor influência isolada no desfecho.
 
 :::
 :::
@@ -468,14 +460,12 @@ Os resultados indicam que o prognóstico está mais relacionado ao estado clíni
 
 :::{style="font-size: 80%; line-height: 1.2;"}
 
-- Os resultados mostram que a sobrevivência de pacientes com câncer de pulmão está fortemente relacionada ao seu estado clínico no início do acompanhamento, mais do que a características como idade isoladamente.
+- A sobrevivência está mais associada ao estado clínico inicial do paciente do que à idade isoladamente.
 
-- O ECOG e o índice de Karnofsky se mostram ferramentas fundamentais para avaliação prognóstica, podendo auxiliar na estratificação de risco e planejamento do tratamento.
+- ECOG e Karnofsky se mostram importantes para avaliação prognóstica e apoio à decisão clínica.
 
-- Diferenças observadas entre grupos indicam a importância de abordagens clínicas individualizadas, especialmente para pacientes em condição mais debilitada.
+- As diferenças entre grupos reforçam a necessidade de abordagens individualizadas, sobretudo em pacientes mais debilitados.
 
-- Como limitações, destacam-se a presença de censura e o fato de a análise não considerar múltiplas covariáveis simultaneamente, o que pode influenciar parcialmente os resultados.
-
-- Ainda assim, a análise fornece evidências claras de que o estado funcional é um dos principais determinantes da sobrevivência, sendo essencial no contexto clínico da doença.
+- Como limitações, destacam-se a presença de censura e a ausência de análise conjunta de múltiplas covariáveis.
 
 :::
