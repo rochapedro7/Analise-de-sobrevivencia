@@ -10,7 +10,7 @@
   <meta name="generator" content="quarto-1.9.37">
 
   <meta name="author" content="Pedro Augusto Menezes Rocha">
-  <meta name="dcterms.date" content="2026-03-05">
+  <meta name="dcterms.date" content="2026-02-06">
   <title>Análise de Sobrevivência e Confiabilidade</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -145,7 +145,7 @@ Pedro Augusto Menezes Rocha
     </div>
 </div>
 
-  <p class="date">03/05/2026</p>
+  <p class="date">02/06/2026</p>
 </section>
 <section>
 <section id="introdução" class="title-slide slide level1 center">
@@ -565,6 +565,416 @@ p = 0,00076 &lt; 0,05
 <li><p>ECOG e Karnofsky se mostram importantes para avaliação prognóstica e apoio à decisão clínica.</p></li>
 <li><p>As diferenças entre grupos reforçam a necessidade de abordagens individualizadas, sobretudo em pacientes mais debilitados.</p></li>
 <li><p>Como limitações, destacam-se a presença de censura e a ausência de análise conjunta de múltiplas covariáveis.</p></li>
+</ul>
+</div>
+</section></section>
+<section id="modelos-paramétricos" class="title-slide slide level1 center">
+<h1><strong>5. MODELOS PARAMÉTRICOS</strong></h1>
+
+</section>
+
+<section>
+<section id="etapa-i-modelos-sem-covariáveis" class="title-slide slide level1 center">
+<h1><strong>Etapa I — Modelos sem covariáveis</strong></h1>
+
+</section>
+<section id="modelos-considerados" class="slide level2">
+<h2><strong>Modelos considerados</strong></h2>
+<div style="font-size: 75%;">
+<p>Foram ajustados cinco modelos paramétricos para representar o tempo de sobrevivência dos pacientes:</p>
+<ul>
+<li>Modelo Exponencial;</li>
+<li>Modelo Weibull;</li>
+<li>Modelo Log-Normal;</li>
+<li>Modelo Gama;</li>
+<li>Modelo Gama Generalizada.</li>
+</ul>
+<p>A escolha do modelo mais adequado foi baseada nos seguintes critérios:</p>
+<ul>
+<li>Comparação gráfica com a curva de Kaplan-Meier;</li>
+<li>Método da linearização;</li>
+<li>Critérios de informação AIC e BIC;</li>
+<li>Teste da Razão de Verossimilhanças (TRV).</li>
+</ul>
+<p>O objetivo foi identificar a distribuição que melhor descreve o comportamento dos tempos de sobrevivência observados.</p>
+</div>
+</section>
+<section id="comparação-gráfica-com-kaplan-meier" class="slide level2">
+<h2><strong>Comparação gráfica com Kaplan-Meier</strong></h2>
+<div class="columns">
+<div class="column" style="width:65%;">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="index_files/figure-revealjs/ekm%20modelos-1.png" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:35%;">
+<div style="font-size: 60%;">
+<ul>
+<li><p>A comparação foi realizada confrontando as probabilidades de sobrevivência estimadas pelos modelos paramétricos com aquelas obtidas pelo estimador de Kaplan-Meier.</p></li>
+<li><p>Quanto mais próximos os pontos estiverem da reta de identidade, melhor é o ajuste do modelo.</p></li>
+<li><p>Observa-se que os modelos Weibull, Gama e Gama Generalizada apresentam melhor concordância com Kaplan-Meier.</p></li>
+</ul>
+</div>
+</div></div>
+</section>
+<section id="método-da-linearização" class="slide level2">
+<h2><strong>Método da linearização</strong></h2>
+<div class="columns">
+<div class="column" style="width:65%;">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="index_files/figure-revealjs/linearizacao%20modelos-1.png" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:35%;">
+<div style="font-size: 60%;">
+<ul>
+<li><p>O método da linearização permite verificar visualmente a adequação de determinadas distribuições.</p></li>
+<li><p>Para um modelo adequado, espera-se que os pontos apresentem comportamento aproximadamente linear.</p></li>
+<li><p>O gráfico associado ao modelo Weibull apresentou o padrão mais próximo de uma reta.</p></li>
+</ul>
+</div>
+</div></div>
+</section>
+<section id="critérios-de-informação" class="slide level2">
+<h2><strong>Critérios de informação</strong></h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Modelo</th>
+<th style="text-align: center;">AIC</th>
+<th style="text-align: center;">BIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Exponencial</td>
+<td style="text-align: center;">2094.20</td>
+<td style="text-align: center;">2097.54</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Weibull</td>
+<td style="text-align: center;">2076.42</td>
+<td style="text-align: center;">2083.10</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Log-Normal</td>
+<td style="text-align: center;">2106.88</td>
+<td style="text-align: center;">2113.57</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Gama</td>
+<td style="text-align: center;">2078.74</td>
+<td style="text-align: center;">2085.43</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Gama Generalizada</td>
+<td style="text-align: center;">2077.86</td>
+<td style="text-align: center;">2087.89</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div><div class="column" style="width:45%;">
+<div style="font-size: 65%;">
+<ul>
+<li><p>Menores valores de AIC e BIC indicam melhor ajuste penalizando modelos excessivamente complexos.</p></li>
+<li><p>O modelo Weibull apresentou simultaneamente o menor AIC e o menor BIC.</p></li>
+<li><p>Os modelos Gama e Gama Generalizada apresentaram desempenho semelhante.</p></li>
+</ul>
+</div>
+</div></div>
+</section>
+<section id="teste-da-razão-de-verossimilhanças" class="slide level2">
+<h2><strong>Teste da Razão de Verossimilhanças</strong></h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Comparacao</th>
+<th style="text-align: center;">p.valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Exponencial x GG</td>
+<td style="text-align: center;">0.00004</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Weibull x GG</td>
+<td style="text-align: center;">0.45687</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Log-Normal x GG</td>
+<td style="text-align: center;">0.00000</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Gama x GG</td>
+<td style="text-align: center;">0.08955</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div><div class="column" style="width:45%;">
+<div style="font-size: 60%;">
+<ul>
+<li><p>O <strong>Teste da Razão de Verossimilhanças (TRV)</strong> foi utilizado para comparar modelos mais simples com o modelo Gama Generalizada.</p></li>
+<li><p>A hipótese nula (<span class="math inline">\(H_0\)</span>) estabelece que o modelo mais simples apresenta ajuste equivalente ao modelo mais complexo.</p></li>
+<li><p>O TRV mostrou que os modelos <strong>Weibull e Gama</strong> não diferiram significativamente da Gama Generalizada (p &gt; 0,05).</p></li>
+<li><p>Como o <strong>Weibull apresentou os menores valores de AIC e BIC</strong>, ele foi selecionado como modelo final por combinar bom ajuste e maior simplicidade.</p></li>
+</ul>
+</div>
+</div></div>
+</section>
+<section id="funções-e-medidas-estimadas-pelo-modelo-weibull" class="slide level2">
+<h2><strong>Funções e medidas estimadas pelo modelo Weibull</strong></h2>
+<div class="columns">
+<div class="column" style="width:60%;">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="index_files/figure-revealjs/unnamed-chunk-2-1.png" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:40%;">
+<div style="font-size: 58%;">
+<ul>
+<li><p>As funções de sobrevivência, risco e risco acumulado apresentam um comportamento bem parecido com as curvas “originais” apresentadas no começo do trabalho, com comportamentos esperados de acordo com o nosso contexto.</p></li>
+<li><p>O tempo médio foi de 405 dias e a mediana estimada foi de aproximadamente 340 dias, resultado consistente com a estimativa obtida pelo método de Kaplan-Meier.</p></li>
+</ul>
+</div>
+</div></div>
+</section>
+<section id="conclusão-da-etapa-i" class="slide level2">
+<h2><strong>Conclusão da Etapa I</strong></h2>
+<div style="font-size: 75%;">
+<p>A análise paramétrica indicou que a <strong>distribuição Weibull</strong> fornece a melhor representação dos tempos de sobrevivência observados.</p>
+<p>A escolha foi sustentada por:</p>
+<ul>
+<li>critérios gráficos;</li>
+<li>linearização;</li>
+<li>AIC e BIC;</li>
+<li>teste da razão de verossimilhanças.</li>
+</ul>
+<p>Além disso, o modelo sugere aumento gradual do risco de óbito ao longo do tempo, comportamento compatível com a evolução clínica da doença.</p>
+<p><strong>O modelo Weibull será utilizado como base para a etapa seguinte</strong>, envolvendo a inclusão de covariáveis explicativas.</p>
+</div>
+</section></section>
+<section>
+<section id="etapa-ii-modelos-paramétricos-com-covariáveis" class="title-slide slide level1 center">
+<h1><em>Etapa II — Modelos Paramétricos com Covariáveis</em></h1>
+
+</section>
+<section id="seleção-das-covariáveis" class="slide level2">
+<h2><strong>Seleção das covariáveis</strong></h2>
+<div style="font-size: 75%;">
+<p>A seleção das covariáveis foi realizada por meio do Teste da Razão de Verossimilhanças (TRV), utilizando procedimento de eliminação sucessiva.</p>
+<p>Inicialmente foram avaliadas as variáveis idade, sexo, estado funcional ECOG, índice de Karnofsky avaliado pelo médico, índice de Karnofsky avaliado pelo paciente e perda de peso recente.</p>
+<p>Após a seleção dos efeitos principais, foram investigadas interações de primeira ordem entre as variáveis remanescentes. As interações que apresentaram evidências de associação com o tempo de sobrevivência foram:</p>
+<ul>
+<li>ECOG × perda de peso;</li>
+<li>Karnofsky (médico) × perda de peso;</li>
+<li>Karnofsky (paciente) × perda de peso.</li>
+</ul>
+<p>O modelo final foi construído a partir desses efeitos principais e interações.</p>
+</div>
+</section>
+<section id="escolha-da-distribuição-paramétrica" class="slide level2">
+<h2><strong>Escolha da distribuição paramétrica</strong></h2>
+<div class="column" style="width:55%;">
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Modelo</th>
+<th style="text-align: center;">AIC</th>
+<th style="text-align: center;">BIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Exponencial</td>
+<td style="text-align: center;">2078.32</td>
+<td style="text-align: center;">2115.09</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Weibull</td>
+<td style="text-align: center;">2045.42</td>
+<td style="text-align: center;">2085.52</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Log-Normal</td>
+<td style="text-align: center;">2086.19</td>
+<td style="text-align: center;">2126.30</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div><div class="column" style="width:45%;">
+<div style="font-size: 65%;">
+<p>Foram ajustados modelos Exponencial, Weibull e Log-Normal contendo as covariáveis selecionadas.</p>
+<p>O modelo Weibull apresentou:</p>
+<ul>
+<li><strong>menor AIC</strong>;</li>
+<li><strong>menor BIC</strong>;</li>
+<li><strong>maior log-verossimilhança</strong>.</li>
+</ul>
+<p>Esses resultados indicam melhor equilíbrio entre qualidade de ajuste, justificando sua escolha para as análises subsequentes.</p>
+</div>
+</div></section>
+<section id="trv" class="slide level2">
+<h2><strong>TRV</strong></h2>
+<div style="font-size: 75%;">
+<ul>
+<li><p>Para complementar a comparação entre os modelos paramétricos, foi aplicado o Teste da Razão de Verossimilhanças (TRV) comparando os modelos <strong>Exponencial e Weibull</strong>.</p></li>
+<li><p>A hipótese nula estabelece que o <strong>modelo Exponencial é suficiente para descrever os dados</strong>, enquanto a hipótese alternativa indica que o modelo Weibull fornece um ajuste superior.</p></li>
+<li><p>O resultado do teste apresentou <strong>p-valor inferior a 0,05</strong>, levando à rejeição da hipótese nula.</p></li>
+</ul>
+<p>Dessa forma, conclui-se que o modelo Weibull apresenta ajuste <strong>significativamente melhor</strong> que o modelo Exponencial, reforçando sua escolha como modelo final para a análise com covariáveis.</p>
+</div>
+</section>
+<section id="modelo-final" class="slide level2">
+<h2><strong>Modelo final</strong></h2>
+<div style="font-size: 70%;">
+<p>O modelo final corresponde a um modelo <strong>Weibull</strong> contendo:</p>
+<p><strong>Efeitos principais</strong></p>
+<ul>
+<li><strong>sexo</strong>;</li>
+<li><strong>estado funcional ECOG</strong>;</li>
+<li><strong>índice de Karnofsky avaliado pelo médico</strong>;</li>
+<li><strong>índice de Karnofsky avaliado pelo paciente</strong>;</li>
+<li><strong>perda de peso recente</strong>.</li>
+</ul>
+<p><strong>Interações</strong></p>
+<ul>
+<li><strong>ECOG × perda de peso</strong>;</li>
+<li><strong>Karnofsky (médico) × perda de peso</strong>;</li>
+<li><strong>Karnofsky (paciente) × perda de peso</strong>.</li>
+</ul>
+<p>A seguir serão avaliados os diagnósticos do modelo e interpretados os efeitos das covariáveis sobre o tempo de sobrevivência dos pacientes.</p>
+</div>
+</section>
+<section id="diagnóstico-do-modelo-resíduos-de-cox-snell" class="slide level2">
+<h2><strong>Diagnóstico do modelo — Resíduos de Cox-Snell</strong></h2>
+<div class="column" style="width:65%;">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="index_files/figure-revealjs/cox-senll-1.png" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:35%;">
+<div style="font-size: 60%;">
+<ul>
+<li><p>Para um modelo adequadamente ajustado espera-se que os resíduos de Cox-Snell sigam aproximadamente uma distribuição Exponencial(1).</p></li>
+<li><p>Observa-se que a curva empírica permanece relativamente próxima da reta teórica de referência.</p></li>
+<li><p>Pequenas discrepâncias aparecem apenas nas extremidades dos gráficos.</p></li>
+<li><p>Os resultados sugerem adequação <strong>satisfatória</strong> do modelo Weibull aos dados observados.</p></li>
+</ul>
+</div>
+</div></section>
+<section id="diagnóstico-do-modelo-resíduos-quantílicos-aleatorizados" class="slide level2">
+<h2><strong>Diagnóstico do modelo — Resíduos quantílicos aleatorizados</strong></h2>
+<div class="column" style="width:65%;">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="index_files/figure-revealjs/residuos%20quant-1.png" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:35%;">
+<div style="font-size: 60%;">
+<ul>
+<li><p>Os resíduos quantílicos aleatorizados devem seguir aproximadamente uma distribuição Normal padrão.</p></li>
+<li><p>Observa-se que a maioria dos pontos permanece próxima da reta de referência e dentro da banda de confiança simulada.</p></li>
+<li><p>Pequenos desvios aparecem apenas nas caudas da distribuição.</p></li>
+<li><p>Assim, não foram observadas evidências importantes de inadequação do modelo.</p></li>
+</ul>
+</div>
+</div></section>
+<section id="interpretação-das-razões-de-tempos-medianos-rtm" class="slide level2">
+<h2><strong>Interpretação das Razões de Tempos Medianos (RTM)</strong></h2>
+<div style="font-size: 60%;">
+<ul>
+<li><strong>Sexo</strong>: <em>RTM = 1,58</em>.</li>
+</ul>
+<p>Pacientes do sexo feminino apresentam tempo mediano de sobrevivência aproximadamente 57,8% maior que pacientes do sexo masculino.</p>
+<ul>
+<li><strong>ECOG sintomático</strong>: <em>RTM = 0,54</em>.</li>
+</ul>
+<p>Pacientes sintomáticos apresentam tempo mediano de sobrevivência aproximadamente 46,3% menor que pacientes assintomáticos.</p>
+<ul>
+<li><strong>ECOG acamado</strong>: <em>RTM = 0,24</em>.</li>
+</ul>
+<p>Pacientes acamados apresentam tempo mediano de sobrevivência aproximadamente 76,4% menor que pacientes assintomáticos.</p>
+<ul>
+<li><strong>Karnofsky avaliado pelo médico</strong>: <em>RTM = 0,978</em>.</li>
+</ul>
+<p>Cada aumento de uma unidade no índice está associado a uma redução de aproximadamente 2,2% no tempo mediano de sobrevivência.</p>
+<ul>
+<li><strong>Karnofsky avaliado pelo paciente</strong>: <em>RTM = 1,020</em>.</li>
+</ul>
+<p>Cada aumento de uma unidade no índice está associado a um aumento de aproximadamente 2,0% no tempo mediano de sobrevivência.</p>
+</div>
+</section>
+<section id="interpretação-das-interações" class="slide level2">
+<h2><strong>Interpretação das interações</strong></h2>
+<div style="font-size: 60%;">
+<ul>
+<li><strong>ECOG sintomático × perda de peso</strong>: <em>RTM = 1,019</em>.</li>
+</ul>
+<p>O efeito da perda de peso sobre a sobrevivência difere entre pacientes sintomáticos e assintomáticos, indicando que o estado funcional modifica parcialmente essa associação.</p>
+<ul>
+<li><strong>ECOG acamado × perda de peso</strong>: <em>RTM = 1,047</em>.</li>
+</ul>
+<p>Entre pacientes com pior estado funcional, o impacto da perda de peso sobre a sobrevivência é diferente daquele observado nos pacientes assintomáticos.</p>
+<ul>
+<li><strong>Karnofsky (médico) × perda de peso</strong>: <em>RTM = 1,001</em>.</li>
+</ul>
+<p>A interação apresentou efeito de pequena magnitude, sugerindo pouca influência prática sobre o tempo mediano de sobrevivência.</p>
+<ul>
+<li><strong>Karnofsky (paciente) × perda de peso</strong>: <em>RTM = 0,999</em>.</li>
+</ul>
+<p>Esse resultado sugere que o efeito favorável de melhores condições funcionais percebidas pelo paciente tende a diminuir à medida que a perda de peso aumenta.</p>
+</div>
+</section>
+<section id="conclusão-da-etapa-ii" class="slide level2">
+<h2><strong>Conclusão da Etapa II</strong></h2>
+<div style="font-size: 75%;">
+<ul>
+<li><p>O modelo Weibull com covariáveis apresentou ajuste adequado aos dados e permitiu identificar fatores associados ao tempo de sobrevivência dos pacientes com câncer de pulmão.</p></li>
+<li><p>Os resultados indicam que pacientes do sexo feminino tendem a apresentar maior sobrevivência, enquanto piores condições clínicas avaliadas pelo índice ECOG estão associadas a reduções expressivas no tempo mediano de vida.</p></li>
+<li><p>Além disso, observou-se que a relação entre condição funcional e sobrevivência depende parcialmente da perda de peso recente, evidenciando a importância conjunta do estado clínico e nutricional dos pacientes.</p></li>
+<li><p>Os diagnósticos baseados nos resíduos de Cox-Snell e nos resíduos quantílicos aleatorizados não indicaram desvios relevantes das suposições do modelo, fornecendo evidências favoráveis à adequação do ajuste obtido.</p></li>
 </ul>
 </div>
 

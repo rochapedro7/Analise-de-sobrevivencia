@@ -6,7 +6,7 @@ date: today
 date-format: "DD/MM/YYYY"
 institute: "Universidade Federal Fluminense (UFF)"
 lang: pt-BR
-format:
+format: 
   revealjs:
     theme: serif
     slide-number: c/t
@@ -37,6 +37,8 @@ require(coin)
 require(survminer)
 require(multcompView)
 library(patchwork)
+require(qqplotr)
+require(flexsurv)
 
 Dados <- read_excel("CancerPulmao1.xlsx")
 
@@ -467,5 +469,607 @@ knitr::kable(tabela_evento, digits = 2, align = "c")
 - As diferenças entre grupos reforçam a necessidade de abordagens individualizadas, sobretudo em pacientes mais debilitados.
 
 - Como limitações, destacam-se a presença de censura e a ausência de análise conjunta de múltiplas covariáveis.
+
+:::
+
+# **5. MODELOS PARAMÉTRICOS**
+
+# **Etapa I — Modelos sem covariáveis**
+
+## **Modelos considerados**
+
+::: {style="font-size: 75%;"}
+Foram ajustados cinco modelos paramétricos para representar o tempo de sobrevivência dos pacientes:
+
+-   Modelo Exponencial;
+-   Modelo Weibull;
+-   Modelo Log-Normal;
+-   Modelo Gama;
+-   Modelo Gama Generalizada.
+
+A escolha do modelo mais adequado foi baseada nos seguintes critérios:
+
+-   Comparação gráfica com a curva de Kaplan-Meier;
+-   Método da linearização;
+-   Critérios de informação AIC e BIC;
+-   Teste da Razão de Verossimilhanças (TRV).
+
+O objetivo foi identificar a distribuição que melhor descreve o comportamento dos tempos de sobrevivência observados.
+:::
+
+## **Comparação gráfica com Kaplan-Meier**
+
+:::::: columns
+::: {.column width="65%"}
+```{r ajuste modelos, include=FALSE}
+ajuste_exp<-flexsurvreg(Surv(time, cens) ~ 1, 
+                        dist = "exponential", 
+                        data=Dados)
+ajuste_wei<-flexsurvreg(Surv(time, cens) ~ 1, 
+                        dist = "weibull", 
+                        data=Dados)
+ajuste_lognorm<-flexsurvreg(Surv(time, cens) ~ 1, 
+                            dist = "lognormal", 
+                            data=Dados)
+ajuste_gama<-flexsurvreg(Surv(time, cens) ~ 1, 
+                         dist = "gamma", 
+                         data=Dados)
+ajuste_gengama<-flexsurvreg(Surv(time, cens) ~ 1, 
+                            dist = "gengamma", 
+                            data=Dados)
+```
+
+```{r ekm modelos}
+ekm <- survfit(Surv(time,cens)~1, data=Dados)
+
+Surv_ekm <- data.frame(ekm$time,ekm$surv)
+colnames(Surv_ekm) <- c("Tempo", "Surv_EKM")
+
+Surv_pam <- data.frame(summary(ajuste_exp)[[1]][,c(1,2)],
+                       summary(ajuste_wei)[[1]][,2],
+                       summary(ajuste_lognorm)[[1]][,2],
+                       summary(ajuste_gama)[[1]][,2],
+                       summary(ajuste_gengama)[[1]][,2])
+colnames(Surv_pam) <- c("Tempo", "Surv_exp", "Surv_wei", 
+                        "Surv_lognorm", "Surv_gama", "Surv_gengama")
+
+Surv_Final <- merge(Surv_pam,Surv_ekm,by="Tempo",all.x=T)
+
+par(mfrow=c(2,3))
+plot(Surv_Final$Surv_EKM, Surv_Final$Surv_exp, 
+     xlab= "S(t): Kaplan-Meier", ylab = "S(t): Exponencial")
+lines(c(0,1), c(0,1), type="l", lty=1)
+plot(Surv_Final$Surv_EKM, Surv_Final$Surv_wei, 
+     xlab= "S(t): Kaplan-Meier", ylab = "S(t): Weibull" )
+lines(c(0,1), c(0,1), type="l", lty=1)
+plot(Surv_Final$Surv_EKM, Surv_Final$Surv_lognorm, 
+     xlab= "S(t): Kaplan-Meier", ylab = "S(t): LogNormal")
+lines(c(0,1), c(0,1), type="l", lty=1)
+plot(Surv_Final$Surv_EKM, Surv_Final$Surv_gama, 
+     xlab= "S(t): Kaplan-Meier", ylab = "S(t): Gama" )
+lines(c(0,1), c(0,1), type="l", lty=1)
+plot(Surv_Final$Surv_EKM, Surv_Final$Surv_gengama, 
+     xlab= "S(t): Kaplan-Meier", ylab = "S(t): Gama Generalizada" )
+lines(c(0,1), c(0,1), type="l", lty=1)
+```
+:::
+
+:::: {.column width="35%"}
+::: {style="font-size: 60%;"}
+-   A comparação foi realizada confrontando as probabilidades de sobrevivência estimadas pelos modelos paramétricos com aquelas obtidas pelo estimador de Kaplan-Meier.
+
+-   Quanto mais próximos os pontos estiverem da reta de identidade, melhor é o ajuste do modelo.
+
+-   Observa-se que os modelos Weibull, Gama e Gama Generalizada apresentam melhor concordância com Kaplan-Meier.
+:::
+::::
+::::::
+
+## **Método da linearização**
+
+:::::: columns
+::: {.column width="65%"}
+```{r linearizacao modelos}
+EixoY_exp = -log(Surv_ekm$Surv_EKM)
+EixoX_exp = Surv_ekm$Tempo
+
+EixoY_wei = log(-log(Surv_ekm$Surv_EKM))
+EixoX_wei = log(Surv_ekm$Tempo)
+
+EixoY_lognorm = qnorm(Surv_ekm$Surv_EKM)
+EixoX_lognorm = log(Surv_ekm$Tempo)
+
+par(mfrow=c(1,3))
+plot(EixoX_exp, EixoY_exp, 
+     xlab = "t",
+     ylab = expression(log(S(t))),
+     main = "Exponencial")
+plot(EixoX_wei, EixoY_wei,
+     xlab = expression(log(t)),
+     ylab = expression(log(-log(S(t)))),
+     main = "Weibull")
+plot(EixoX_lognorm, EixoY_lognorm,
+     xlab = expression(log(t)),
+     ylab = expression(Phi^{-1}(S(t))),
+     main = "Log-Normal")
+```
+:::
+
+:::: {.column width="35%"}
+::: {style="font-size: 60%;"}
+-   O método da linearização permite verificar visualmente a adequação de determinadas distribuições.
+
+-   Para um modelo adequado, espera-se que os pontos apresentem comportamento aproximadamente linear.
+
+-   O gráfico associado ao modelo Weibull apresentou o padrão mais próximo de uma reta.
+:::
+::::
+::::::
+
+## **Critérios de informação**
+
+:::::: columns
+::: {.column width="55%"}
+```{r aic bic modelos}
+tabela_aicbic <- data.frame(
+  Modelo = c("Exponencial",
+             "Weibull",
+             "Log-Normal",
+             "Gama",
+             "Gama Generalizada"),
+  AIC = c(2094.196,
+          2076.415,
+          2106.882,
+          2078.744,
+          2077.861),
+  BIC = c(2097.538,
+          2083.100,
+          2113.567,
+          2085.428,
+          2087.888)
+)
+
+knitr::kable(tabela_aicbic,
+             digits = 2,
+             align = "c")
+```
+:::
+
+:::: {.column width="45%"}
+::: {style="font-size: 65%;"}
+-   Menores valores de AIC e BIC indicam melhor ajuste penalizando modelos excessivamente complexos.
+
+-   O modelo Weibull apresentou simultaneamente o menor AIC e o menor BIC.
+
+-   Os modelos Gama e Gama Generalizada apresentaram desempenho semelhante.
+:::
+::::
+::::::
+
+## **Teste da Razão de Verossimilhanças**
+
+:::::: columns
+::: {.column width="55%"}
+```{r trv modelos}
+TRV <- data.frame(
+  Comparacao = c("Exponencial x GG",
+                 "Weibull x GG",
+                 "Log-Normal x GG",
+                 "Gama x GG"),
+  p.valor = c(0.000038,
+              0.456867,
+              0.00000003,
+              0.089547)
+)
+
+knitr::kable(TRV,
+             digits = 5,
+             align = "c")
+```
+:::
+
+:::: {.column width="45%"}
+::: {style="font-size: 60%;"}
+-   O **Teste da Razão de Verossimilhanças (TRV)** foi utilizado para comparar modelos mais simples com o modelo Gama Generalizada.
+
+-   A hipótese nula ($H_0$) estabelece que o modelo mais simples apresenta ajuste equivalente ao modelo mais complexo.
+
+-   O TRV mostrou que os modelos **Weibull e Gama** não diferiram significativamente da Gama Generalizada (p \> 0,05).
+
+-   Como o **Weibull apresentou os menores valores de AIC e BIC**, ele foi selecionado como modelo final por combinar bom ajuste e maior simplicidade.
+:::
+::::
+::::::
+
+## **Funções e medidas estimadas pelo modelo Weibull**
+
+:::::: columns
+::: {.column width="60%"}
+```{r}
+
+t <- seq(min(Dados$time), max(Dados$time), length.out = 100)
+S <- summary(ajuste_wei, t = t, type = "survival")[[1]]
+h <- summary(ajuste_wei, t = t, type = "hazard")[[1]]
+H <- summary(ajuste_wei, t = t, type = "cumhaz")[[1]]
+
+df <- rbind(
+  data.frame(t = t, valor = S$est, li = S$lcl, ls = S$ucl, funcao = "S(t)"),
+  data.frame(t = t, valor = h$est, li = h$lcl, ls = h$ucl, funcao = "h(t)"),
+  data.frame(t = t, valor = H$est, li = H$lcl, ls = H$ucl, funcao = "H(t)")
+)
+
+df$funcao <- factor(
+  df$funcao,
+  levels = c("S(t)", "h(t)", "H(t)"),
+  labels = c("S(t)", "lambda(t)", "Lambda(t)")
+)
+
+ggplot(df, aes(t, valor, color = funcao, fill = funcao)) +
+  geom_ribbon(aes(ymin = li, ymax = ls), alpha = 0.2, color = NA) +
+  geom_line(size = 1.1) +
+  facet_wrap(~funcao, scales = "free_y", labeller = label_parsed) +
+  labs(x = "Tempo", y = NULL,
+       title = "Funções do Modelo Weibull") +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "none")
+
+```
+:::
+
+:::: {.column width="40%"}
+::: {style="font-size: 58%;"}
+-   As funções de sobrevivência, risco e risco acumulado apresentam um comportamento bem parecido com as curvas "originais" apresentadas no começo do trabalho, com comportamentos esperados de acordo com o nosso contexto.
+
+-   O tempo médio foi de 405 dias e a mediana estimada foi de aproximadamente 340 dias, resultado consistente com a estimativa obtida pelo método de Kaplan-Meier.
+:::
+::::
+::::::
+
+## **Conclusão da Etapa I**
+
+::: {style="font-size: 75%;"}
+A análise paramétrica indicou que a **distribuição Weibull** fornece a melhor representação dos tempos de sobrevivência observados.
+
+A escolha foi sustentada por:
+
+-   critérios gráficos;
+-   linearização;
+-   AIC e BIC;
+-   teste da razão de verossimilhanças.
+
+Além disso, o modelo sugere aumento gradual do risco de óbito ao longo do tempo, comportamento compatível com a evolução clínica da doença.
+
+**O modelo Weibull será utilizado como base para a etapa seguinte**, envolvendo a inclusão de covariáveis explicativas.
+:::
+
+# *Etapa II — Modelos Paramétricos com Covariáveis*
+
+```{r include=FALSE}
+modelo_final <- flexsurvreg(
+  
+  Surv(time,cens) ~
+    
+    grupos_sex +
+    grupos_ecog +
+    ph.karno +
+    pat.karno +
+    wt.loss +
+    
+    grupos_ecog:wt.loss +
+    ph.karno:wt.loss +
+    pat.karno:wt.loss,
+  
+  data=Dados,
+  dist="weibull"
+  
+)
+
+ajuste_exp <- flexsurvreg(
+  Surv(time,cens) ~
+    grupos_sex +
+    grupos_ecog +
+    ph.karno +
+    pat.karno +
+    wt.loss +
+    grupos_ecog:wt.loss +
+    ph.karno:wt.loss +
+    pat.karno:wt.loss,
+  data=Dados,
+  dist="exponential"
+)
+
+ajuste_wei <- flexsurvreg(
+  Surv(time,cens) ~
+    grupos_sex +
+    grupos_ecog +
+    ph.karno +
+    pat.karno +
+    wt.loss +
+    grupos_ecog:wt.loss +
+    ph.karno:wt.loss +
+    pat.karno:wt.loss,
+  data=Dados,
+  dist="weibull"
+)
+
+ajuste_lognorm <- flexsurvreg(
+  Surv(time,cens) ~
+    grupos_sex +
+    grupos_ecog +
+    ph.karno +
+    pat.karno +
+    wt.loss +
+    grupos_ecog:wt.loss +
+    ph.karno:wt.loss +
+    pat.karno:wt.loss,
+  data=Dados,
+  dist="lnorm"
+)
+```
+
+## **Seleção das covariáveis**
+
+::: {style="font-size: 75%;"}
+A seleção das covariáveis foi realizada por meio do Teste da Razão de Verossimilhanças (TRV), utilizando procedimento de eliminação sucessiva.
+
+Inicialmente foram avaliadas as variáveis idade, sexo, estado funcional ECOG, índice de Karnofsky avaliado pelo médico, índice de Karnofsky avaliado pelo paciente e perda de peso recente.
+
+Após a seleção dos efeitos principais, foram investigadas interações de primeira ordem entre as variáveis remanescentes. As interações que apresentaram evidências de associação com o tempo de sobrevivência foram:
+
+-   ECOG × perda de peso;
+-   Karnofsky (médico) × perda de peso;
+-   Karnofsky (paciente) × perda de peso.
+
+O modelo final foi construído a partir desses efeitos principais e interações.
+:::
+
+## **Escolha da distribuição paramétrica**
+
+::: {.column width="55%"}
+```{r aic bic mod cov}
+Comparacao <- data.frame(
+  Modelo = c(
+    "Exponencial",
+    "Weibull",
+    "Log-Normal"
+  ),
+
+  AIC = c(
+    ajuste_exp$AIC,
+    ajuste_wei$AIC,
+    ajuste_lognorm$AIC
+  ),
+
+  BIC = c(
+    ajuste_exp$BIC,
+    ajuste_wei$BIC,
+    ajuste_lognorm$BIC
+  )
+)
+
+knitr::kable(
+  Comparacao,
+  digits = 2,
+  align = "c"
+)
+```
+:::
+
+:::: {.column width="45%"}
+::: {style="font-size: 65%;"}
+Foram ajustados modelos Exponencial, Weibull e Log-Normal contendo as covariáveis selecionadas.
+
+O modelo Weibull apresentou:
+
+-   **menor AIC**;
+-   **menor BIC**;
+-   **maior log-verossimilhança**.
+
+Esses resultados indicam melhor equilíbrio entre qualidade de ajuste, justificando sua escolha para as análises subsequentes.
+:::
+::::
+
+## **TRV**
+
+::: {style="font-size: 75%;"}
+- Para complementar a comparação entre os modelos paramétricos, foi aplicado o Teste da Razão de Verossimilhanças (TRV) comparando os modelos **Exponencial e Weibull**.
+
+- A hipótese nula estabelece que o **modelo Exponencial é suficiente para descrever os dados**, enquanto a hipótese alternativa indica que o modelo Weibull fornece um ajuste superior.
+
+- O resultado do teste apresentou **p-valor inferior a 0,05**, levando à rejeição da hipótese nula.
+
+Dessa forma, conclui-se que o modelo Weibull apresenta ajuste **significativamente melhor** que o modelo Exponencial, reforçando sua escolha como modelo final para a análise com covariáveis.
+:::
+
+## **Modelo final**
+
+::: {style="font-size: 70%;"}
+O modelo final corresponde a um modelo **Weibull** contendo:
+
+**Efeitos principais**
+
+-   **sexo**;
+-   **estado funcional ECOG**;
+-   **índice de Karnofsky avaliado pelo médico**;
+-   **índice de Karnofsky avaliado pelo paciente**;
+-   **perda de peso recente**.
+
+**Interações**
+
+-   **ECOG × perda de peso**;
+-   **Karnofsky (médico) × perda de peso**;
+-   **Karnofsky (paciente) × perda de peso**.
+
+A seguir serão avaliados os diagnósticos do modelo e interpretados os efeitos das covariáveis sobre o tempo de sobrevivência dos pacientes.
+:::
+
+## **Diagnóstico do modelo — Resíduos de Cox-Snell**
+
+::: {.column width="65%"}
+```{r cox-senll}
+ResiduoCS = coxsnell_flexsurvreg(modelo_final)$est
+
+par(mfrow=c(1,2))
+
+ekm <- survfit(
+  Surv(ResiduoCS,Dados$cens)~1,
+  type="kaplan-meier"
+)
+
+plot(
+  ekm,
+  fun="cumhaz",
+  xlab="Resíduos de Cox-Snell",
+  ylab="Função de risco acumulado"
+)
+
+abline(0,1,col="red")
+
+plot(
+  ekm,
+  xlab="Resíduos de Cox-Snell",
+  ylab="Função de sobrevivência"
+)
+
+ResiduoCS <- sort(ResiduoCS)
+exp1 <- exp(-ResiduoCS)
+
+points(
+  ResiduoCS,
+  exp1,
+  col="red",
+  type="l"
+)
+```
+:::
+
+:::: {.column width="35%"}
+::: {style="font-size: 60%;"}
+- Para um modelo adequadamente ajustado espera-se que os resíduos de Cox-Snell sigam aproximadamente uma distribuição Exponencial(1).
+
+- Observa-se que a curva empírica permanece relativamente próxima da reta teórica de referência.
+
+- Pequenas discrepâncias aparecem apenas nas extremidades dos gráficos.
+
+- Os resultados sugerem adequação **satisfatória** do modelo Weibull aos dados observados.
+:::
+::::
+
+## **Diagnóstico do modelo — Resíduos quantílicos aleatorizados**
+
+::: {.column width="65%"}
+```{r residuos quant}
+survival = NULL
+quantilic = NULL
+cdf = NULL
+Residuo = NULL
+
+for(i in 1:nrow(Dados)){
+
+  survival[i] <- summary(
+    modelo_final,
+    type = "survival",
+    newdata = Dados[i, , drop = FALSE],
+    t = Dados$time[i]
+  )[[1]]$est
+
+  cdf[i] = 1-survival[i]
+
+  if(Dados$cens[i] == 1){
+    quantilic[i] <- cdf[i]
+  } else {
+    quantilic[i] <- runif(
+      1,
+      min=cdf[i],
+      max=1
+    )
+  }
+
+  Residuo[i] <- qnorm(quantilic[i])
+
+}
+
+ggplot(
+  data.frame(Residuo),
+  aes(sample=Residuo)
+) +
+  stat_qq_band(fill="lightblue") +
+  stat_qq_line() +
+  stat_qq_point() +
+  xlab("Quantis Teóricos") +
+  ylab("Quantis Amostrais") +
+  theme_bw()
+```
+:::
+
+:::: {.column width="35%"}
+::: {style="font-size: 60%;"}
+- Os resíduos quantílicos aleatorizados devem seguir aproximadamente uma distribuição Normal padrão.
+
+- Observa-se que a maioria dos pontos permanece próxima da reta de referência e dentro da banda de confiança simulada.
+
+- Pequenos desvios aparecem apenas nas caudas da distribuição.
+
+- Assim, não foram observadas evidências importantes de inadequação do modelo.
+:::
+::::
+
+## **Interpretação das Razões de Tempos Medianos (RTM)**
+
+::: {style="font-size: 60%;"}
+- **Sexo**: *RTM = 1,58*.
+
+Pacientes do sexo feminino apresentam tempo mediano de sobrevivência aproximadamente 57,8% maior que pacientes do sexo masculino.
+
+- **ECOG sintomático**: *RTM = 0,54*.
+
+Pacientes sintomáticos apresentam tempo mediano de sobrevivência aproximadamente 46,3% menor que pacientes assintomáticos.
+
+- **ECOG acamado**: *RTM = 0,24*.
+
+Pacientes acamados apresentam tempo mediano de sobrevivência aproximadamente 76,4% menor que pacientes assintomáticos.
+
+- **Karnofsky avaliado pelo médico**: *RTM = 0,978*.
+
+Cada aumento de uma unidade no índice está associado a uma redução de aproximadamente 2,2% no tempo mediano de sobrevivência.
+
+- **Karnofsky avaliado pelo paciente**: *RTM = 1,020*.
+
+Cada aumento de uma unidade no índice está associado a um aumento de aproximadamente 2,0% no tempo mediano de sobrevivência.
+:::
+
+## **Interpretação das interações**
+
+::: {style="font-size: 60%;"}
+
+- **ECOG sintomático × perda de peso**: *RTM = 1,019*.
+
+O efeito da perda de peso sobre a sobrevivência difere entre pacientes sintomáticos e assintomáticos, indicando que o estado funcional modifica parcialmente essa associação.
+
+- **ECOG acamado × perda de peso**: *RTM = 1,047*.
+
+Entre pacientes com pior estado funcional, o impacto da perda de peso sobre a sobrevivência é diferente daquele observado nos pacientes assintomáticos.
+
+- **Karnofsky (médico) × perda de peso**: *RTM = 1,001*.
+
+A interação apresentou efeito de pequena magnitude, sugerindo pouca influência prática sobre o tempo mediano de sobrevivência.
+
+- **Karnofsky (paciente) × perda de peso**: *RTM = 0,999*.
+
+Esse resultado sugere que o efeito favorável de melhores condições funcionais percebidas pelo paciente tende a diminuir à medida que a perda de peso aumenta.
+
+:::
+
+## **Conclusão da Etapa II**
+
+::: {style="font-size: 75%;"}
+
+- O modelo Weibull com covariáveis apresentou ajuste adequado aos dados e permitiu identificar fatores associados ao tempo de sobrevivência dos pacientes com câncer de pulmão.
+
+- Os resultados indicam que pacientes do sexo feminino tendem a apresentar maior sobrevivência, enquanto piores condições clínicas avaliadas pelo índice ECOG estão associadas a reduções expressivas no tempo mediano de vida.
+
+- Além disso, observou-se que a relação entre condição funcional e sobrevivência depende parcialmente da perda de peso recente, evidenciando a importância conjunta do estado clínico e nutricional dos pacientes.
+
+- Os diagnósticos baseados nos resíduos de Cox-Snell e nos resíduos quantílicos aleatorizados não indicaram desvios relevantes das suposições do modelo, fornecendo evidências favoráveis à adequação do ajuste obtido.
 
 :::
