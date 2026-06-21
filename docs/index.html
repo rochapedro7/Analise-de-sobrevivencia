@@ -10,7 +10,6 @@
   <meta name="generator" content="quarto-1.9.37">
 
   <meta name="author" content="Pedro Augusto Menezes Rocha">
-  <meta name="dcterms.date" content="2026-02-06">
   <title>Análise de Sobrevivência e Confiabilidade</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -145,7 +144,7 @@ Pedro Augusto Menezes Rocha
     </div>
 </div>
 
-  <p class="date">02/06/2026</p>
+  <p class="date">21/06/2026</p>
 </section>
 <section>
 <section id="introdução" class="title-slide slide level1 center">
@@ -975,6 +974,162 @@ p = 0,00076 &lt; 0,05
 <li><p>Os resultados indicam que pacientes do sexo feminino tendem a apresentar maior sobrevivência, enquanto piores condições clínicas avaliadas pelo índice ECOG estão associadas a reduções expressivas no tempo mediano de vida.</p></li>
 <li><p>Além disso, observou-se que a relação entre condição funcional e sobrevivência depende parcialmente da perda de peso recente, evidenciando a importância conjunta do estado clínico e nutricional dos pacientes.</p></li>
 <li><p>Os diagnósticos baseados nos resíduos de Cox-Snell e nos resíduos quantílicos aleatorizados não indicaram desvios relevantes das suposições do modelo, fornecendo evidências favoráveis à adequação do ajuste obtido.</p></li>
+</ul>
+</div>
+</section></section>
+<section>
+<section id="modelo-de-cox" class="title-slide slide level1 center">
+<h1><strong>6. MODELO DE COX</strong></h1>
+
+</section>
+<section id="seleção-de-covariáveis" class="slide level2">
+<h2><strong>Seleção de covariáveis</strong></h2>
+<div style="font-size: 75%;">
+<p>A seleção das covariáveis foi realizada por meio de eliminação sucessiva utilizando o <strong>Teste da Razão de Verossimilhanças</strong>. Ao final do processo, permaneceram no modelo as variáveis:</p>
+<ul>
+<li><strong>sexo</strong></li>
+<li><strong>estado funcional ECOG</strong></li>
+<li><strong>índice de Karnofsky avaliado pelo médico (ph.karno)</strong></li>
+<li><strong>índice de Karnofsky avaliado pelo paciente (pat.karno)</strong></li>
+<li><strong>perda de peso recente (wt.loss)</strong>.</li>
+</ul>
+<p>Os testes globais do modelo foram significativos (TRV, Wald e Score; <strong>p &lt; 0,001</strong>), indicando que o conjunto de covariáveis contribui para explicar os tempos de sobrevivência observados.</p>
+<p>Além disso, <strong>o índice de concordância foi igual a 0,655</strong>, indicando capacidade moderada do modelo em discriminar pacientes com diferentes níveis de risco.</p>
+</div>
+</section>
+<section id="resíduos-de-cox-snell" class="slide level2">
+<h2><strong>Resíduos de Cox-Snell</strong></h2>
+<div class="column" style="width:65%;">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="index_files/figure-revealjs/res%20cox-1.png" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:35%;">
+<div style="font-size: 60%;">
+<p>Os resíduos de Cox-Snell foram utilizados para avaliar a qualidade global do ajuste.</p>
+<p>Observa-se que a função de risco acumulado estimada acompanha razoavelmente a reta de referência de inclinação unitária, enquanto a função de sobrevivência empírica permanece próxima da curva teórica da distribuição exponencial padrão.</p>
+<p>Dessa forma, não foram observados desvios importantes em relação ao comportamento esperado dos resíduos, fornecendo evidências de que <strong>o modelo apresenta ajuste satisfatório aos dados</strong>.</p>
+</div>
+</div></section>
+<section id="teste-dos-resíduos-de-schoenfeld" class="slide level2">
+<h2><strong>Teste dos resíduos de Schoenfeld</strong></h2>
+<div style="font-size: 65%;">
+<p>A hipótese de riscos proporcionais foi investigada por meio do teste baseado nos resíduos de Schoenfeld.</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Variável</th>
+<th>p-valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>grupos_sex</td>
+<td>0,123</td>
+</tr>
+<tr class="even">
+<td>grupos_ecog</td>
+<td>0,267</td>
+</tr>
+<tr class="odd">
+<td>ph.karno</td>
+<td>0,035</td>
+</tr>
+<tr class="even">
+<td>pat.karno</td>
+<td>0,062</td>
+</tr>
+<tr class="odd">
+<td>wt.loss</td>
+<td>0,671</td>
+</tr>
+<tr class="even">
+<td><strong>GLOBAL</strong></td>
+<td><strong>0,225</strong></td>
+</tr>
+</tbody>
+</table>
+<p>O teste global apresentou <strong>valor-p igual a 0,225</strong>. Assim, ao nível de 5% de significância, <strong>não há evidências para rejeitar a hipótese de riscos proporcionais</strong>.</p>
+<p>Portanto, o pressuposto fundamental do modelo de Cox pode ser considerado satisfeito para o conjunto das covariáveis analisadas.</p>
+<p>Embora a variável ph.karno tenha apresentado valor-p individual inferior a 0,05, a avaliação gráfica dos resíduos <strong>não revelou tendência sistemática ao longo do tempo</strong>, indicando que eventuais desvios são pequenos e não comprometem a adequação global do modelo.</p>
+</div>
+</section>
+<section id="gráficos-dos-resíduos-de-schoenfeld" class="slide level2">
+<h2><strong>Gráficos dos resíduos de Schoenfeld</strong></h2>
+<div class="column" style="width:65%;">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="index_files/figure-revealjs/grafio%20res%20sch-1.png" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:35%;">
+<div style="font-size: 60%;">
+<p>Os gráficos dos resíduos de Schoenfeld foram utilizados como complemento ao teste formal.</p>
+<p>De modo geral, as curvas suavizadas permaneceram <strong>próximas da linha horizontal ao longo do tempo</strong>, sem evidências claras de tendências crescentes ou decrescentes persistentes.</p>
+<p>Esses resultados corroboram as conclusões obtidas pelo teste formal, indicando que a hipótese de riscos proporcionais é <strong>razoavelmente atendida</strong>.</p>
+</div>
+</div></section>
+<section id="interpretação-dos-efeitos-das-covariáveis" class="slide level2">
+<h2><strong>Interpretação dos efeitos das covariáveis</strong></h2>
+<div style="font-size: 70%;">
+<p>As interpretações foram realizadas por meio das razões de risco (Hazard Ratios - HR), obtidas a partir da exponencial dos coeficientes estimados.</p>
+<ul>
+<li><strong>Sexo</strong>: <em>HR = 0,544</em>.</li>
+</ul>
+<p>Assim, comparado aos pacientes do sexo masculino, pacientes do sexo feminino apresentam risco de morte aproximadamente 46% menor.</p>
+<ul>
+<li><strong>ECOG (sintomáticos)</strong>: <em>HR = 2,012</em></li>
+</ul>
+<p>Assim, comparados aos pacientes assintomáticos, esses indivíduos apresentam risco de morte aproximadamente 2,02 vezes maior.</p>
+<ul>
+<li><strong>ECOG (acamados)</strong>: <em>HR = 3,684</em></li>
+</ul>
+<p>Assim, comparados aos pacientes assintomáticos, esses indivíduos apresentam risco de morte aproximadamente 3,68 vezes maior.</p>
+</div>
+</section>
+<section id="interpretação-dos-efeitos-das-covariáveis-1" class="slide level2">
+<h2><strong>Interpretação dos efeitos das covariáveis</strong></h2>
+<div style="font-size: 70%;">
+<ul>
+<li><strong>Karnofsky (médico)</strong>: <em>HR=1,019</em></li>
+</ul>
+<p>Portanto, para cada aumento de uma unidade no índice de Karnofsky avaliado pelo médico, o risco de morte aumenta cerca de 1,9%.</p>
+<ul>
+<li><strong>Karnofsky (paciente)</strong>: <em>HR=0,984</em></li>
+</ul>
+<p>Assim, para cada aumento de uma unidade no índice de Karnofsky avaliado pelo paciente, o risco de morte diminui aproximadamente 1,6%.</p>
+<ul>
+<li><strong>Perda de peso</strong>: <em>HR=0,987</em></li>
+</ul>
+<p>Portanto, para cada unidade adicional de perda de peso registrada, observa-se redução aproximada de 1,3% no risco de morte.</p>
+</div>
+</section>
+<section id="comparação-com-a-abordagem-paramétrica" class="slide level2">
+<h2><strong>Comparação com a abordagem paramétrica</strong></h2>
+<div style="font-size: 70%;">
+<ul>
+<li><p>O modelo paramétrico Weibull e o modelo de Cox produziram resultados bastante semelhantes. Em ambas as abordagens, <strong>sexo e estado funcional ECOG foram os fatores mais fortemente associados à sobrevivência</strong>, conduzindo às mesmas conclusões práticas.</p></li>
+<li><p>A principal diferença está na interpretação dos parâmetros: o modelo Weibull utiliza <strong>Razões de Tempo (RTM)</strong>, enquanto o modelo de Cox utiliza <strong>Razões de Risco (HR)</strong>. Além disso, o modelo Weibull exige a especificação de uma distribuição para os tempos de sobrevivência, ao passo que o <strong>modelo de Cox é mais flexível</strong> por não depender dessa hipótese.</p></li>
+<li><p>Como os dois modelos apresentaram bom ajuste e conclusões consistentes, os resultados podem ser considerados robustos. Entretanto, <strong>pela menor dependência de pressupostos distribucionais, o modelo de Cox mostrou-se particularmente adequado para esta análise</strong>.</p></li>
+</ul>
+</div>
+</section>
+<section id="conclusão-3" class="slide level2">
+<h2><strong>Conclusão</strong></h2>
+<div style="font-size: 70%;">
+<ul>
+<li><p>Os resultados indicaram que <strong>sexo e estado funcional ECOG são os principais fatores associados à sobrevivência dos pacientes</strong>. Pacientes do sexo feminino apresentaram menor risco de morte, enquanto maiores níveis de comprometimento funcional estiveram associados a aumentos expressivos do risco.</p></li>
+<li><p>A análise dos resíduos de Cox-Snell e dos resíduos de Schoenfeld indicou que o modelo apresentou <strong>ajuste satisfatório</strong> e que a hipótese de riscos proporcionais pode ser considerada <strong>válida</strong>.</p></li>
+<li><p>Dessa forma, <strong>o modelo de Cox mostrou-se adequado para descrever os fatores associados à sobrevivência dos pacientes analisados</strong>.</p></li>
 </ul>
 </div>
 
